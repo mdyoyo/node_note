@@ -1,0 +1,28 @@
+.page-tile{
+	font-size: 20px;
+}
+
+.page-nav{
+	padding:10px;
+	background-color:#ccc;
+	margin-bottom:30px;
+}
+
+.nav-username,
+.nav-register,
+.nav-login{
+	margin:0 10px;
+}
+
+.register_check_hint_error{
+	display:block;
+	margin-top: 5px;
+	margin-bottom: 10px;
+	color: #a94442;
+}
+.register_check_hint_ok{
+	display:block;
+	margin-top: 5px;
+	margin-bottom: 10px;
+	color: #3c763d;
+}
