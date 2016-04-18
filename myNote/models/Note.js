@@ -39,13 +39,5 @@ NoteDao.prototype.save=function(obj,callback){
         callback(err);
     })
 }
-/**
- 按照电影名称精确查询
- **/
-NoteDao.prototype.findByName=function(name,callback){
-    Note.findOne({name:name},function(err,obj){
-        callback(err,obj);
-    });
-}
 
 module.exports=new NoteDao();

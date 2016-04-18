@@ -65,6 +65,9 @@ app.get('/detail/:_id',function(req,res){
             return res.redirect('/');
         }
         if(art){
+            //var tagString = art.tag;
+            //var tags = tagString.split('×');
+            //console.log(tags);
             res.render('detail',{
                 title:'笔记详情',
                 user: req.session.user,
@@ -96,7 +99,7 @@ app.get('/post_update/:_id',function(req,res){
  * 根据id删除日记
  */
 app.get('/delete/:_id',function(req,res){
-    console.log("删除日记" + req.params._id);
+    console.log("删除笔记！");
     Note.findOne({_id:req.params._id})
         .exec(function(err,art){
             if(err) {
@@ -130,7 +133,7 @@ app.post('/post_update/:_id',function(req,res) {
             art.save(function(err,doc){
                 if(err){
                     console.log(err);
-                    return res.redirect('/home');
+                    return res.redirect('/list');
                 }
                 console.log("修改成功");
                 res.render('detail', {
@@ -231,7 +234,7 @@ app.post('/login',function(req,res){
 app.get('/quit',function(req,res) {
     req.session.user = null;
     console.log('退出！');
-    return res.redirect('/login');
+    return res.redirect('/mylogin');
 });
 
 //响应发布页面get请求
@@ -291,16 +294,14 @@ app.get('/check_login',function(req,res,next){
     var username = req.query.uname;
     var password = req.query.pwd;
     console.log(username +" "+password);
-    var msg = "";
     var status = false;
     User.findOne({username:username},function(err,user){
         if(err){
             console.log(err);
-            return res.redirect('/login');
+            return res.redirect('/mylogin');
         }
         if(!user){
             console.log('用户不存在！');
-            msg = "u";
             status = false;
         }
         else{
@@ -309,7 +310,6 @@ app.get('/check_login',function(req,res,next){
                 md5password = md5.update(password).digest('hex');
             if(user.password !== md5password){
                 console.log('密码错误！');
-                msg = "p";
                 status = false;
             }else{
                 console.log('登录成功！');
@@ -319,15 +319,8 @@ app.get('/check_login',function(req,res,next){
                 req.session.user = user;
             }
         }
-        if(status){
-            console.log(status);
-            res.send({"status":status});
-        }else{
-            console.log("sss");
-            res.send({"status":status,"msg":msg});
-        }
+        res.send({"status":status});
     });
-
 });
 app.get('/checkUsername_register',function(req,res,next){
     console.log('查看是否重名');
@@ -336,7 +329,7 @@ app.get('/checkUsername_register',function(req,res,next){
     User.findOne({username:username},function(err,user){
         if (err) {
             console.log(err);
-            return res.redirect('/register');
+            return res.redirect('/myregister');
         }
         var already_exist = false;
         var msg = "恭喜，用户名可用";
@@ -350,7 +343,108 @@ app.get('/checkUsername_register',function(req,res,next){
 });
 app.get('/list',checkLogin.noLogin);
 app.get('/list',note.ret_note);
+
+app.get('/my_publish',checkLogin.noLogin);
+app.get('/my_publish',function(req,res) {
+    console.log('发表笔记！');
+    res.render('my_publish',{
+        user:req.session.user
+    });
+});
+app.get('/publishDiary',function(req,res){
+    console.log("my发表日记");
+    var title = req.query.title_value;
+    console.log('title= '+ title);
+    var tags = req.query.tags_value;
+    console.log('tags= '+ tags);
+    var content = req.query.content_value;
+    console.log('content= '+ content);
+
+    var note = new Note({
+        title:title,
+        author:req.session.user.username,
+        tag:tags,
+        content:content
+    });
+    note.save(function(err,doc){
+        if(err){
+            console.log(err);
+            return res.redirect('/my_publish');
+        }
+        console.log('文章发表成功！');
+        res.send({"status":true});
+    });
+});
 //监听3000端口
+app.get('/mylogin',function(req,res) {
+    console.log('my登录！');
+    res.render('mylogin',{
+        user:req.session.user
+//        title:'查看笔记'
+    });
+});
+app.get('/myregister',function(req,res) {
+    console.log('my注册！');
+    res.render('myregister',{
+        user:req.session.user
+    });
+});
+//响应注册页面post请求
+app.post('/myregister',function(req,res){
+    //req.body可以获取到表单的每项数据
+    var username = req.body.username,
+        password = req.body.password,
+        passwordRepeat = req.body.passwordRepeat;
+    User.findOne({username:username},function(err,user){
+        if(err){
+            console.log(err);
+            return res.redirect('/myregister');
+        }
+        if(user){
+            console.log('用户名已经存在');
+            return res.send({msg:'用户名已存在'});
+        }
+        //对密码进行MD5加密
+        var md5 = crypto.createHash('md5'),
+            md5password = md5.update(password).digest('hex');
+        //新建User对象用于保存数据
+        var newUser = new User({
+            username:username,
+            password:md5password
+        });
+        newUser.save(function(err,doc){
+            if(err){
+                console.log(err);
+                return res.redirect('/myregister');
+            }
+            console.log('注册成功！');
+            return res.redirect('/mylogin');
+        });
+    });
+});
+//查看笔记详情
+app.get('/my_detail/:_id',function(req,res){
+    console.log('my查看笔记！');
+    Note.findOne({_id: req.params._id}).exec(function(err,art){
+        if(err){
+            console.log(err);
+            return res.redirect('/');
+        }
+        if(art){
+            var tagString = art.tag;
+            var tags = tagString.split('×');
+            tags.pop();
+            console.log(tags);
+            console.log(art.content);
+            res.render('my_detail',{
+                user: req.session.user,
+                art: art,
+                moment: moment,
+                tags:tags
+            });
+        }
+    });
+});
 app.listen(3000,function(req,res){
     console.log('app is running at port 3000.');
 });

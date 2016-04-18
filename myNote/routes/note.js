@@ -8,18 +8,15 @@ exports.ret_note = function(req, res) {
     console.log("in ret_note");
     var search={author:req.session.user.username};
     var page={limit:5,num:1};//每页限制5条记录，查询的页面为num
-
     //查看哪页
     if(req.query.p){
         page['num']=req.query.p<1 ? 1 : req.query.p;
     }
-
     var model = {
         search:search,
         columns:'title author tag content createTime',
         page:page
     };
-
     Note.findPagination(model,function(err, pageCount, list){
         page['pageCount']=pageCount;
         page['size']=list.length;
@@ -29,10 +26,9 @@ exports.ret_note = function(req, res) {
             is_null = true;
         }
         return res.render('list', {
-            user:req.session.user,//需要处理一下！！未登录！！
+            user:req.session.user,
             title:'笔记列表',
             is_null:is_null,
-            nav:'admin.movie',
             notes:list,
             moment:moment,
             page:page

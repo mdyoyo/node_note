@@ -83,15 +83,12 @@
 				temp.className = "help-block";
 				temp.innerHTML = "长度3-20个字符，字母、数字、下划线的组合";
 				var data = {"username_r":username};
-
 				$.getJSON("checkUsername_register",data,
 						function(data) {
-							if(data.status)
-							{
+							if(data.status) {
 								temp.className = "register_check_hint_error";
 								temp.innerHTML = ""+data.msg;
-							}
-							else{
+							} else{
 								temp.className = "register_check_hint_ok";
 								temp.innerHTML = "恭喜，用户名可用";
 							}
